@@ -98,6 +98,11 @@ def stream_mission(message: str) -> None:
 
 
 def main():
+    try:
+        from neo_banner import print_banner
+        print_banner()
+    except ImportError:
+        pass
     print(f"{BOLD}=== Neo Code — Pilotage Topologie ==={RESET}")
     print(f"{DIM}API : {NEO_URL}/mission/stream")
     print(f"session : {SESSION_ID}{RESET}")

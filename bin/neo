@@ -1,7 +1,7 @@
 #!/bin/bash
 # Neo Code — lanceur terminal, façon `claude`.
-# Configure automatiquement au premier lancement (comme `claude` demande une clé API),
-# puis ouvre un port-forward vers l'agent et lance le client terminal — pas de navigateur.
+# Utilise l'accès kubectl déjà disponible sur la machine si possible (cas kubinote).
+# Sinon (machine distante sans accès cluster), demande la config scopée au premier lancement.
 set -e
 
 NAMESPACE="client-agent-core-staging"
@@ -13,17 +13,21 @@ TERM_SCRIPT="$BIN_DIR/neo_term.py"
 SETUP_SCRIPT="$BIN_DIR/neo_setup.py"
 NEOVIBE_KUBECONFIG="$HOME/.neovibe/kubeconfig"
 
-# Premier lancement — assistant de configuration (clé API + jeton), comme `claude` au démarrage.
-if [ ! -f "$HOME/.neovibe/settings.local.json" ] || [ ! -f "$NEOVIBE_KUBECONFIG" ]; then
-  python3 "$SETUP_SCRIPT"
+# Clé API — toujours nécessaire, quelle que soit la machine.
+if [ ! -f "$HOME/.neovibe/settings.local.json" ]; then
+  python3 "$SETUP_SCRIPT" --api-key-only
 fi
 
-# Utilise le kubeconfig scopé neovibe s'il existe (machine distante), sinon le kubeconfig
-# par défaut de la machine (cas d'usage sur kubinote lui-même, contexte 'kubinote').
-if [ -f "$NEOVIBE_KUBECONFIG" ]; then
+# Accès cluster : essaie d'abord le kubectl déjà configuré sur cette machine (cas kubinote).
+if kubectl --context=kubinote get pods -n "$NAMESPACE" >/dev/null 2>&1; then
+  KUBECTL_CONTEXT="kubinote"
+elif [ -f "$NEOVIBE_KUBECONFIG" ] && KUBECONFIG="$NEOVIBE_KUBECONFIG" kubectl get pods -n "$NAMESPACE" >/dev/null 2>&1; then
   export KUBECONFIG="$NEOVIBE_KUBECONFIG"
   KUBECTL_CONTEXT="kubinote"
 else
+  # Ni l'un ni l'autre ne marche — machine distante jamais configurée : demande le jeton scopé.
+  python3 "$SETUP_SCRIPT" --kubeconfig-only
+  export KUBECONFIG="$NEOVIBE_KUBECONFIG"
   KUBECTL_CONTEXT="kubinote"
 fi
 

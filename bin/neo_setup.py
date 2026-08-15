@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Assistant de configuration neovibe — lance automatiquement au premier `neo` si non configuré.
-Deux informations à coller, rien d'autre (le certificat et l'adresse du cluster sont déjà connus) :
-  1. La clé API de l'agent
-  2. Le jeton d'accès (portée limitée : port-forward + lecture des pods, un seul namespace)
+"""Assistant de configuration neovibe — lancé automatiquement par `neo` selon le besoin réel :
+  --api-key-only     : demande juste la clé API de l'agent (toujours nécessaire)
+  --kubeconfig-only  : demande le jeton d'accès cluster (seulement si l'accès local ne marche pas déjà)
+Sans argument : demande les deux (usage manuel / reconfiguration complète).
 """
 import json
 import sys
@@ -20,6 +20,12 @@ BOLD = "\033[1m"
 DIM = "\033[2m"
 GREEN = "\033[32m"
 RESET = "\033[0m"
+
+
+def _write_settings(api_key: str) -> None:
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    SETTINGS_FILE.write_text(json.dumps({"api_key": api_key}, indent=2))
+    SETTINGS_FILE.chmod(0o600)
 
 
 def _write_kubeconfig(token: str) -> None:
@@ -42,42 +48,38 @@ users:
   user:
     token: {token}
 """
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     KUBECONFIG_FILE.write_text(content)
     KUBECONFIG_FILE.chmod(0o600)
 
 
-def is_configured() -> bool:
-    if not SETTINGS_FILE.exists() or not KUBECONFIG_FILE.exists():
-        return False
-    try:
-        data = json.loads(SETTINGS_FILE.read_text())
-        return bool(data.get("api_key"))
-    except json.JSONDecodeError:
-        return False
-
-
-def run_wizard() -> None:
-    print(f"{BOLD}=== Configuration de neovibe ==={RESET}")
-    print(f"{DIM}Deux informations à coller (demandées une seule fois, stockées dans"
-          f" ~/.neovibe/, jamais versionnées).{RESET}\n")
-
+def ask_api_key() -> None:
+    print(f"{BOLD}=== Configuration neovibe — clé API ==={RESET}")
     api_key = input(f"{BOLD}Clé API de l'agent : {RESET}").strip()
-    token = input(f"{BOLD}Jeton d'accès cluster : {RESET}").strip()
-
-    if not api_key or not token:
-        print("Configuration incomplète — rien n'a été sauvegardé.", file=sys.stderr)
+    if not api_key:
+        print("Clé vide — rien n'a été sauvegardé.", file=sys.stderr)
         sys.exit(1)
+    _write_settings(api_key)
+    print(f"{GREEN}✓ Clé enregistrée.{RESET}\n")
 
-    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-    SETTINGS_FILE.write_text(json.dumps({"api_key": api_key}, indent=2))
-    SETTINGS_FILE.chmod(0o600)
+
+def ask_kubeconfig() -> None:
+    print(f"{BOLD}=== Configuration neovibe — accès cluster ==={RESET}")
+    print(f"{DIM}Cette machine n'a pas encore accès au cluster NeoKube.{RESET}")
+    token = input(f"{BOLD}Jeton d'accès cluster : {RESET}").strip()
+    if not token:
+        print("Jeton vide — rien n'a été sauvegardé.", file=sys.stderr)
+        sys.exit(1)
     _write_kubeconfig(token)
-
-    print(f"\n{GREEN}✓ Configuré.{RESET} Lance `neo` pour démarrer.\n")
+    print(f"{GREEN}✓ Accès configuré.{RESET}\n")
 
 
 if __name__ == "__main__":
-    if is_configured():
-        print("Déjà configuré — rien à faire. (Pour reconfigurer : supprime ~/.neovibe/ et relance.)")
+    args = sys.argv[1:]
+    if "--api-key-only" in args:
+        ask_api_key()
+    elif "--kubeconfig-only" in args:
+        ask_kubeconfig()
     else:
-        run_wizard()
+        ask_api_key()
+        ask_kubeconfig()
