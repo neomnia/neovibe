@@ -11,9 +11,25 @@ import sys
 import urllib.request
 import urllib.error
 import uuid
+from pathlib import Path
 
 NEO_URL = os.getenv("NEO_URL", "http://neo.client-agent-core-staging.svc.cluster.local:8495")
 SESSION_ID = os.getenv("NEO_SESSION_ID") or f"ttyd-{uuid.uuid4().hex[:12]}"
+
+
+def _load_api_key() -> str:
+    """Clé API : env NEOVIBE_API_KEY prioritaire, sinon ~/.neovibe/settings.local.json (non versionné)."""
+    if os.getenv("NEOVIBE_API_KEY"):
+        return os.environ["NEOVIBE_API_KEY"]
+    settings_path = Path.home() / ".neovibe" / "settings.local.json"
+    try:
+        data = json.loads(settings_path.read_text())
+        return data.get("api_key", "")
+    except (FileNotFoundError, json.JSONDecodeError):
+        return ""
+
+
+API_KEY = _load_api_key()
 
 DIM = "\033[2m"
 BOLD = "\033[1m"
@@ -33,7 +49,11 @@ def stream_mission(message: str) -> None:
     req = urllib.request.Request(
         f"{NEO_URL}/mission/stream",
         data=payload,
-        headers={"Content-Type": "application/json", "Accept": "text/event-stream"},
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "text/event-stream",
+            **({"Authorization": f"Bearer {API_KEY}"} if API_KEY else {}),
+        },
         method="POST",
     )
     try:
@@ -81,6 +101,9 @@ def main():
     print(f"{BOLD}=== Neo Code — Pilotage Topologie ==={RESET}")
     print(f"{DIM}API : {NEO_URL}/mission/stream")
     print(f"session : {SESSION_ID}{RESET}")
+    if not API_KEY:
+        print(f"{RED}⚠ Aucune clé API trouvée (NEOVIBE_API_KEY ou ~/.neovibe/settings.local.json) — "
+              f"la connexion échouera si l'agent exige une authentification.{RESET}")
     print("Tapez un message puis Entrée. Ctrl+D ou 'exit' pour quitter.\n")
     while True:
         try:
