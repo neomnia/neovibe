@@ -1,0 +1,44 @@
+name: release
+
+# Versioning automatise neovibe (client terminal Neo) -- meme pattern que
+# Kubinote-GitOps/neosaas-v2 (semantic-release, Conventional Commits).
+# Coupe un tag SemVer a chaque push sur main contenant un commit
+# releasable (feat/fix/BREAKING CHANGE).
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_BOT_GITHUB_TOKEN }}
+        run: |
+          npx --yes \
+            -p semantic-release \
+            -p @semantic-release/changelog \
+            -p @semantic-release/git \
+            -p conventional-changelog-conventionalcommits \
+            semantic-release

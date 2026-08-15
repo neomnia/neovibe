@@ -1,0 +1,33 @@
+#!/bin/bash
+# Neo Code — lanceur terminal, façon `claude`.
+# Ouvre un port-forward vers le service neo (namespace client-agent-core-staging)
+# et lance directement le client terminal Python — pas de navigateur.
+set -e
+
+NAMESPACE="client-agent-core-staging"
+SERVICE="neo"
+LOCAL_PORT="18495"
+REMOTE_PORT="8495"
+KUBECTL_CONTEXT="kubinote"
+TERM_SCRIPT="$(dirname "$(readlink -f "$0")")/neo_term.py"
+
+cleanup() {
+  if [ -n "$PF_PID" ]; then
+    kill "$PF_PID" 2>/dev/null || true
+  fi
+}
+trap cleanup EXIT INT TERM
+
+kubectl --context="$KUBECTL_CONTEXT" port-forward -n "$NAMESPACE" "svc/$SERVICE" \
+  "$LOCAL_PORT:$REMOTE_PORT" > /tmp/neo-portforward.log 2>&1 &
+PF_PID=$!
+
+# Attendre que le port-forward soit prêt
+for i in $(seq 1 20); do
+  if curl -s -o /dev/null "http://localhost:$LOCAL_PORT/health" 2>/dev/null; then
+    break
+  fi
+  sleep 0.5
+done
+
+NEO_URL="http://localhost:$LOCAL_PORT" python3 "$TERM_SCRIPT"
