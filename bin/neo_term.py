@@ -6,7 +6,10 @@ live display of tool calls and reasoning steps, Claude-Code-style.
 """
 import json
 import os
+import re
 import sys
+import threading
+import time
 import urllib.request
 import urllib.error
 import uuid
@@ -63,7 +66,55 @@ CYAN = "\033[36m"
 YELLOW = "\033[33m"
 GREEN = "\033[32m"
 RED = "\033[31m"
+MAGENTA = "\033[35m"
 RESET = "\033[0m"
+CLEAR_LINE = "\033[2K\r"
+
+SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+
+
+class Spinner:
+    """Live 'still working' indicator for the gaps between SSE events — Claude-Code-style
+    reassurance that something is actually happening, not just a static line."""
+
+    def __init__(self, label: str = "Working"):
+        self.label = label
+        self._stop = threading.Event()
+        self._thread: threading.Thread | None = None
+
+    def _spin(self) -> None:
+        i = 0
+        while not self._stop.is_set():
+            frame = SPINNER_FRAMES[i % len(SPINNER_FRAMES)]
+            sys.stdout.write(f"{CLEAR_LINE}{DIM}{CYAN}  {frame} {self.label}...{RESET}")
+            sys.stdout.flush()
+            i += 1
+            time.sleep(0.08)
+
+    def start(self) -> None:
+        self._stop.clear()
+        self._thread = threading.Thread(target=self._spin, daemon=True)
+        self._thread.start()
+
+    def stop(self) -> None:
+        self._stop.set()
+        if self._thread:
+            self._thread.join(timeout=0.5)
+        sys.stdout.write(CLEAR_LINE)
+        sys.stdout.flush()
+
+
+def _render_markdown_line(line: str) -> str:
+    """Light Markdown -> ANSI rendering so headers/bold don't show up as raw '#'/'**' in the
+    terminal. Deliberately minimal — not a full Markdown renderer, just the common cases Neo
+    actually produces (headers, bold, table rows left as-is since they're already readable)."""
+    heading_match = re.match(r"^(#{1,6})\s+(.*)", line)
+    if heading_match:
+        text = heading_match.group(2)
+        text = re.sub(r"\*\*(.+?)\*\*", rf"{BOLD}\1{RESET}{BOLD}{CYAN}", text)
+        return f"{BOLD}{CYAN}{text}{RESET}"
+    line = re.sub(r"\*\*(.+?)\*\*", rf"{BOLD}\1{RESET}", line)
+    return line
 
 
 def stream_mission(message: str) -> None:
@@ -90,6 +141,18 @@ def stream_mission(message: str) -> None:
         },
         method="POST",
     )
+    spinner = Spinner()
+    spinner_running = False
+    line_buffer = ""
+
+    def flush_line(final: bool = False) -> None:
+        """Print the buffered response line once it's complete (rendered through Markdown),
+        since we can't tell if a line is a heading/bold until it's finished streaming."""
+        nonlocal line_buffer
+        if line_buffer or final:
+            print(f"  {_render_markdown_line(line_buffer)}", flush=True)
+            line_buffer = ""
+
     try:
         with urllib.request.urlopen(req, timeout=310) as resp:
             printed_work_header = False
@@ -106,37 +169,85 @@ def stream_mission(message: str) -> None:
                 except json.JSONDecodeError:
                     continue
                 etype = ev.get("type")
+
+                if spinner_running and etype != "heartbeat":
+                    spinner.stop()
+                    spinner_running = False
+
                 if etype == "tool":
                     if not printed_work_header:
                         print(f"\n{BOLD}Working:{RESET}", flush=True)
                         printed_work_header = True
                     name = ev.get("name", "?")
                     print(f"{DIM}{CYAN}  ⚙ tool: {name}{RESET}", flush=True)
+                    spinner.start()
+                    spinner_running = True
                 elif etype == "step":
                     if not printed_work_header:
                         print(f"\n{BOLD}Working:{RESET}", flush=True)
                         printed_work_header = True
                     text = ev.get("text", "")
                     print(f"{DIM}{YELLOW}  → {text}{RESET}", flush=True)
+                    spinner.start()
+                    spinner_running = True
                 elif etype == "token":
                     if not printed_response_header:
                         print(f"\n{BOLD}Response:{RESET}", flush=True)
-                        print(f"{BOLD}{GREEN}neo:{RESET} ", end="", flush=True)
+                        print(f"{BOLD}{GREEN}neo:{RESET}", flush=True)
                         printed_response_header = True
-                    print(ev.get("text", ""), end="", flush=True)
+                    text = ev.get("text", "")
+                    for ch in text:
+                        if ch == "\n":
+                            flush_line()
+                        else:
+                            line_buffer += ch
                 elif etype == "error":
                     print(f"\n{RED}✗ {ev.get('text', 'unknown error')}{RESET}", flush=True)
                 elif etype == "done":
                     if not printed_response_header:
+                        answer = ev.get("answer", "")
                         print(f"\n{BOLD}Response:{RESET}", flush=True)
-                        print(f"{BOLD}{GREEN}neo:{RESET} {ev.get('answer', '')}", flush=True)
+                        print(f"{BOLD}{GREEN}neo:{RESET}", flush=True)
+                        for md_line in answer.split("\n"):
+                            print(f"  {_render_markdown_line(md_line)}", flush=True)
+                    else:
+                        flush_line(final=True)
                     print("", flush=True)
                 elif etype == "heartbeat":
-                    pass
+                    if not spinner_running:
+                        spinner.start()
+                        spinner_running = True
     except urllib.error.URLError as e:
+        if spinner_running:
+            spinner.stop()
         print(f"\n{RED}[connection error to Neo: {e}]{RESET}", flush=True)
     except Exception as e:
+        if spinner_running:
+            spinner.stop()
         print(f"\n{RED}[error: {e}]{RESET}", flush=True)
+    finally:
+        if spinner_running:
+            spinner.stop()
+
+
+def _prompt_input() -> str:
+    """Framed, distinctly-colored input line — Claude-Code-style, so the user always knows
+    unambiguously where they're typing vs. where Neo is talking."""
+    width = min(shutil_width(), 70)
+    print(f"{MAGENTA}┌{'─' * (width - 1)}{RESET}")
+    try:
+        msg = input(f"{MAGENTA}│{RESET} {BOLD}{MAGENTA}❯{RESET} ").strip()
+    finally:
+        print(f"{MAGENTA}└{'─' * (width - 1)}{RESET}")
+    return msg
+
+
+def shutil_width() -> int:
+    try:
+        import shutil
+        return shutil.get_terminal_size(fallback=(70, 20)).columns
+    except Exception:
+        return 70
 
 
 def main():
@@ -152,7 +263,7 @@ def main():
     print("Type a message and press Enter. Ctrl+D or 'exit' to quit.\n")
     while True:
         try:
-            msg = input(f"{BOLD}> {RESET}").strip()
+            msg = _prompt_input()
         except (EOFError, KeyboardInterrupt):
             print()
             break
