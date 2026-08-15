@@ -1,3 +1,9 @@
+## [0.8.0](https://github.com/neomnia/neovibe/compare/v0.7.0...v0.8.0) (2026-08-15)
+
+### Features
+
+* NEOVIBE.md project context loaded at session start (CLAUDE.md equivalent) ([0b0f31e](https://github.com/neomnia/neovibe/commit/0b0f31ecfb29dbc6e2849e98f7dcad9e9cf7c763))
+
 ## [0.7.0](https://github.com/neomnia/neovibe/compare/v0.6.0...v0.7.0) (2026-08-15)
 
 ### Features
