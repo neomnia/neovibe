@@ -1,3 +1,9 @@
+## [0.8.3](https://github.com/neomnia/neovibe/compare/v0.8.2...v0.8.3) (2026-08-15)
+
+### Bug Fixes
+
+* simplify input framing to top/bottom horizontal rules, no side bars ([5feeff5](https://github.com/neomnia/neovibe/commit/5feeff580b23186850daf3c9622892cc561d07ea))
+
 ## [0.8.2](https://github.com/neomnia/neovibe/compare/v0.8.1...v0.8.2) (2026-08-15)
 
 ### Bug Fixes
