@@ -37,11 +37,13 @@ def _load_version() -> str:
 
 
 def _load_context() -> str:
-    """NEOVIBE.md, neovibe's equivalent of CLAUDE.md — loaded once, sent with the first
-    message of the session so Neo has it without it being repeated every turn.
-    ~/.neovibe/NEOVIBE.md overrides the repo's default if present (local customization)."""
-    local_override = Path.home() / ".neovibe" / "NEOVIBE.md"
-    repo_default = Path(__file__).resolve().parent.parent / "NEOVIBE.md"
+    """neo.md, neovibe's equivalent of CLAUDE.md — loaded once, sent with the first message of
+    the session so Neo has it without it being repeated every turn. Kept short by design: it
+    only carries always-relevant behavior rules, and points at neo-topology.md/neo-tools.md/
+    neo-conventions.md as reference (those aren't auto-loaded, to avoid bloating every session).
+    ~/.neovibe/neo.md overrides the repo's default if present (local customization)."""
+    local_override = Path.home() / ".neovibe" / "neo.md"
+    repo_default = Path(__file__).resolve().parent.parent / "neo.md"
     for path in (local_override, repo_default):
         try:
             return path.read_text()
@@ -70,7 +72,7 @@ def stream_mission(message: str) -> None:
     global _context_sent
     wire_message = message
     if CONTEXT and not _context_sent:
-        wire_message = f"[Context — NEOVIBE.md]\n{CONTEXT}\n\n[User message]\n{message}"
+        wire_message = f"[Context — neo.md]\n{CONTEXT}\n\n[User message]\n{message}"
         _context_sent = True
 
     payload = json.dumps({
