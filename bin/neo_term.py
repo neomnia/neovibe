@@ -36,8 +36,24 @@ def _load_version() -> str:
         return "0.0.0"
 
 
+def _load_context() -> str:
+    """NEOVIBE.md, neovibe's equivalent of CLAUDE.md — loaded once, sent with the first
+    message of the session so Neo has it without it being repeated every turn.
+    ~/.neovibe/NEOVIBE.md overrides the repo's default if present (local customization)."""
+    local_override = Path.home() / ".neovibe" / "NEOVIBE.md"
+    repo_default = Path(__file__).resolve().parent.parent / "NEOVIBE.md"
+    for path in (local_override, repo_default):
+        try:
+            return path.read_text()
+        except FileNotFoundError:
+            continue
+    return ""
+
+
 API_KEY = _load_api_key()
 VERSION = _load_version()
+CONTEXT = _load_context()
+_context_sent = False
 
 DIM = "\033[2m"
 BOLD = "\033[1m"
@@ -51,8 +67,14 @@ RESET = "\033[0m"
 def stream_mission(message: str) -> None:
     print(f"\n{BOLD}Request:{RESET} {message}", flush=True)
 
+    global _context_sent
+    wire_message = message
+    if CONTEXT and not _context_sent:
+        wire_message = f"[Context — NEOVIBE.md]\n{CONTEXT}\n\n[User message]\n{message}"
+        _context_sent = True
+
     payload = json.dumps({
-        "message": message,
+        "message": wire_message,
         "session_id": SESSION_ID,
         "interface": "ttyd-neo",
     }).encode("utf-8")
