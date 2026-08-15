@@ -10,6 +10,12 @@ curl -fsSL https://raw.githubusercontent.com/neomnia/neovibe/main/install.sh | b
 
 (nécessite `kubectl` et `python3` déjà installés)
 
+Optionnel mais recommandé — pour la bannière avec le vrai logo NeoKube en couleurs au démarrage :
+```bash
+sudo apt install chafa   # ou : brew install chafa
+```
+Sans `chafa`, `neo` affiche un logo ASCII simplifié à la place — fonctionne pareil.
+
 ## Premier lancement
 
 ```bash

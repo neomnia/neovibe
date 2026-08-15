@@ -39,6 +39,10 @@ case ":$PATH:" in
      echo "  export PATH=\"$BIN_DIR:\$PATH\"" ;;
 esac
 
+if ! command -v chafa >/dev/null 2>&1; then
+  echo "(astuce : installe 'chafa' pour la bannière avec le vrai logo NeoKube en couleurs — optionnel)"
+fi
+
 echo ""
 echo "✓ Installé. Lance simplement :"
 echo ""

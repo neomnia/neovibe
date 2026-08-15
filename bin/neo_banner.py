@@ -1,14 +1,19 @@
-"""Bannière de démarrage neovibe — inspirée du logo NeoKube (cube + N), https://www.neokube.fr."""
+"""Bannière de démarrage neovibe — logo réel (https://www.neokube.fr) rendu via chafa si
+disponible (vraies couleurs, blocs Unicode), sinon repli sur un hexagone ASCII simple."""
+import shutil
+import subprocess
 import sys
-import time
+from pathlib import Path
 
-CYAN = "\033[36m"
 BOLD = "\033[1m"
 DIM = "\033[2m"
+CYAN = "\033[36m"
 RESET = "\033[0m"
 
-# Cube hexagonal filaire + N, dérivé du logo neokube.fr (hexagone = cube en isométrique)
-BANNER_LINES = [
+LOGO_PATH = Path(__file__).resolve().parent.parent / "assets" / "logo.jpg"
+
+# Repli si chafa n'est pas installé (`apt install chafa` / `brew install chafa`).
+FALLBACK_LINES = [
     "         ╱◥◤╲         ",
     "       ╱      ╲       ",
     "     ╱          ╲     ",
@@ -21,14 +26,29 @@ BANNER_LINES = [
 ]
 
 
-def print_banner(animate: bool = True) -> None:
-    """Affiche la bannière. Animation légère (dessin ligne par ligne) si animate=True et sortie TTY."""
-    if animate and sys.stdout.isatty():
-        for line in BANNER_LINES:
-            print(f"{CYAN}{line}{RESET}")
-            time.sleep(0.03)
+def _render_with_chafa() -> str | None:
+    if not shutil.which("chafa") or not LOGO_PATH.exists():
+        return None
+    try:
+        result = subprocess.run(
+            ["chafa", "--size=28x14", "--colors=full", "--symbols=block", str(LOGO_PATH)],
+            capture_output=True, text=True, timeout=5,
+        )
+        return result.stdout if result.returncode == 0 else None
+    except Exception:
+        return None
+
+
+def print_banner() -> None:
+    if not sys.stdout.isatty():
+        print(f"{BOLD}neovibe{RESET}")
+        return
+
+    rendered = _render_with_chafa()
+    if rendered:
+        print(rendered)
     else:
-        for line in BANNER_LINES:
+        for line in FALLBACK_LINES:
             print(f"{CYAN}{line}{RESET}")
     print(f"{BOLD}neovibe{RESET}{DIM} — client NeoKube{RESET}\n")
 
