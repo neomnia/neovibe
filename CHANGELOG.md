@@ -1,3 +1,9 @@
+## [0.8.2](https://github.com/neomnia/neovibe/compare/v0.8.1...v0.8.2) (2026-08-15)
+
+### Bug Fixes
+
+* full-width input frame, drop redundant Request echo, brighter live tool/step lines ([c61455b](https://github.com/neomnia/neovibe/commit/c61455bc432c76d255204171d514d2294fe3f938))
+
 ## [0.8.1](https://github.com/neomnia/neovibe/compare/v0.8.0...v0.8.1) (2026-08-15)
 
 ### Bug Fixes
