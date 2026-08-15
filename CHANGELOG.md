@@ -1,3 +1,9 @@
+## [0.8.1](https://github.com/neomnia/neovibe/compare/v0.8.0...v0.8.1) (2026-08-15)
+
+### Bug Fixes
+
+* reassuring live spinner, real Markdown rendering, framed colored input prompt ([6a4d458](https://github.com/neomnia/neovibe/commit/6a4d458578bec9b1b3ddb23ab9cca94eb7d71ba7))
+
 ## [0.8.0](https://github.com/neomnia/neovibe/compare/v0.7.0...v0.8.0) (2026-08-15)
 
 ### Features
