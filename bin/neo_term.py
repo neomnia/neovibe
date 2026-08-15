@@ -86,7 +86,7 @@ class Spinner:
         i = 0
         while not self._stop.is_set():
             frame = SPINNER_FRAMES[i % len(SPINNER_FRAMES)]
-            sys.stdout.write(f"{CLEAR_LINE}{DIM}{CYAN}  {frame} {self.label}...{RESET}")
+            sys.stdout.write(f"{CLEAR_LINE}{BOLD}{CYAN}  {frame} {self.label}...{RESET}")
             sys.stdout.flush()
             i += 1
             time.sleep(0.08)
@@ -118,8 +118,6 @@ def _render_markdown_line(line: str) -> str:
 
 
 def stream_mission(message: str) -> None:
-    print(f"\n{BOLD}Request:{RESET} {message}", flush=True)
-
     global _context_sent
     wire_message = message
     if CONTEXT and not _context_sent:
@@ -179,7 +177,7 @@ def stream_mission(message: str) -> None:
                         print(f"\n{BOLD}Working:{RESET}", flush=True)
                         printed_work_header = True
                     name = ev.get("name", "?")
-                    print(f"{DIM}{CYAN}  ⚙ tool: {name}{RESET}", flush=True)
+                    print(f"{CYAN}  ⚙ tool: {name}{RESET}", flush=True)
                     spinner.start()
                     spinner_running = True
                 elif etype == "step":
@@ -187,7 +185,7 @@ def stream_mission(message: str) -> None:
                         print(f"\n{BOLD}Working:{RESET}", flush=True)
                         printed_work_header = True
                     text = ev.get("text", "")
-                    print(f"{DIM}{YELLOW}  → {text}{RESET}", flush=True)
+                    print(f"{YELLOW}  → {text}{RESET}", flush=True)
                     spinner.start()
                     spinner_running = True
                 elif etype == "token":
@@ -233,7 +231,7 @@ def stream_mission(message: str) -> None:
 def _prompt_input() -> str:
     """Framed, distinctly-colored input line — Claude-Code-style, so the user always knows
     unambiguously where they're typing vs. where Neo is talking."""
-    width = min(shutil_width(), 70)
+    width = shutil_width()
     print(f"{MAGENTA}┌{'─' * (width - 1)}{RESET}")
     try:
         msg = input(f"{MAGENTA}│{RESET} {BOLD}{MAGENTA}❯{RESET} ").strip()
