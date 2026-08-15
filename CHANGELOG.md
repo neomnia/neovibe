@@ -1,3 +1,9 @@
+## [0.5.0](https://github.com/neomnia/neovibe/compare/v0.4.0...v0.5.0) (2026-08-15)
+
+### Features
+
+* logo reel neokube.fr rendu en terminal (chafa, vraies couleurs) ([7d335c4](https://github.com/neomnia/neovibe/commit/7d335c485329dbac3edaa94e58e74e8d4365f26d))
+
 ## [0.4.0](https://github.com/neomnia/neovibe/compare/v0.3.0...v0.4.0) (2026-08-15)
 
 ### Features
