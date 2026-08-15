@@ -1,3 +1,9 @@
+## [0.7.0](https://github.com/neomnia/neovibe/compare/v0.6.0...v0.7.0) (2026-08-15)
+
+### Features
+
+* transparent compact logo, side-by-side layout with version/session info ([a324c78](https://github.com/neomnia/neovibe/commit/a324c78936c78de1be1cef87a9346275d4232dee))
+
 ## [0.6.0](https://github.com/neomnia/neovibe/compare/v0.5.0...v0.6.0) (2026-08-15)
 
 ### Features
