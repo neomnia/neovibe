@@ -229,14 +229,15 @@ def stream_mission(message: str) -> None:
 
 
 def _prompt_input() -> str:
-    """Framed, distinctly-colored input line — Claude-Code-style, so the user always knows
-    unambiguously where they're typing vs. where Neo is talking."""
+    """Distinctly-colored input turn, marked by a horizontal rule above and below — Claude-Code
+    style, so the user always knows unambiguously where they're typing vs. where Neo is talking.
+    Rules only (no side bars): marks the turn, doesn't box it in like a form field."""
     width = shutil_width()
-    print(f"{MAGENTA}┌{'─' * (width - 1)}{RESET}")
+    print(f"{MAGENTA}{'─' * width}{RESET}")
     try:
-        msg = input(f"{MAGENTA}│{RESET} {BOLD}{MAGENTA}❯{RESET} ").strip()
+        msg = input(f"{BOLD}{MAGENTA}❯{RESET} ").strip()
     finally:
-        print(f"{MAGENTA}└{'─' * (width - 1)}{RESET}")
+        print(f"{MAGENTA}{'─' * width}{RESET}")
     return msg
 
 
