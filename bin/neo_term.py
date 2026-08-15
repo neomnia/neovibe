@@ -118,12 +118,10 @@ def stream_mission(message: str) -> None:
 def main():
     try:
         from neo_banner import print_banner
-        print_banner()
+        print_banner(version=VERSION, session=SESSION_ID)
     except ImportError:
-        pass
-    print(f"{BOLD}=== Neo Code — Topology Pilot ==={RESET} {DIM}v{VERSION}{RESET}")
-    print(f"{DIM}API: {NEO_URL}/mission/stream")
-    print(f"session: {SESSION_ID}{RESET}")
+        print(f"{BOLD}neovibe{RESET} {DIM}v{VERSION}{RESET}")
+    print(f"{DIM}API: {NEO_URL}/mission/stream{RESET}")
     if not API_KEY:
         print(f"{RED}⚠ No API key found (NEOVIBE_API_KEY or ~/.neovibe/settings.local.json) — "
               f"the connection will fail if the agent requires authentication.{RESET}")
