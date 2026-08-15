@@ -1,15 +1,31 @@
 #!/bin/bash
 # Neo Code — lanceur terminal, façon `claude`.
-# Ouvre un port-forward vers le service neo (namespace client-agent-core-staging)
-# et lance directement le client terminal Python — pas de navigateur.
+# Configure automatiquement au premier lancement (comme `claude` demande une clé API),
+# puis ouvre un port-forward vers l'agent et lance le client terminal — pas de navigateur.
 set -e
 
 NAMESPACE="client-agent-core-staging"
 SERVICE="neo"
 LOCAL_PORT="18495"
 REMOTE_PORT="8495"
-KUBECTL_CONTEXT="kubinote"
-TERM_SCRIPT="$(dirname "$(readlink -f "$0")")/neo_term.py"
+BIN_DIR="$(dirname "$(readlink -f "$0")")"
+TERM_SCRIPT="$BIN_DIR/neo_term.py"
+SETUP_SCRIPT="$BIN_DIR/neo_setup.py"
+NEOVIBE_KUBECONFIG="$HOME/.neovibe/kubeconfig"
+
+# Premier lancement — assistant de configuration (clé API + jeton), comme `claude` au démarrage.
+if [ ! -f "$HOME/.neovibe/settings.local.json" ] || [ ! -f "$NEOVIBE_KUBECONFIG" ]; then
+  python3 "$SETUP_SCRIPT"
+fi
+
+# Utilise le kubeconfig scopé neovibe s'il existe (machine distante), sinon le kubeconfig
+# par défaut de la machine (cas d'usage sur kubinote lui-même, contexte 'kubinote').
+if [ -f "$NEOVIBE_KUBECONFIG" ]; then
+  export KUBECONFIG="$NEOVIBE_KUBECONFIG"
+  KUBECTL_CONTEXT="kubinote"
+else
+  KUBECTL_CONTEXT="kubinote"
+fi
 
 cleanup() {
   if [ -n "$PF_PID" ]; then
