@@ -1,3 +1,9 @@
+## [0.4.0](https://github.com/neomnia/neovibe/compare/v0.3.0...v0.4.0) (2026-08-15)
+
+### Features
+
+* banniere de demarrage (logo neokube.fr) + visibilite temps reel des outils appeles ([9cffceb](https://github.com/neomnia/neovibe/commit/9cffceb3cba26aa98d40a1f401529b4ade3aa7af))
+
 ## [0.3.0](https://github.com/neomnia/neovibe/compare/v0.2.0...v0.3.0) (2026-08-15)
 
 ### Features
