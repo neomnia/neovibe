@@ -1,6 +1,6 @@
-# Installer neovibe sur une autre machine
+# Installing neovibe on another machine
 
-Une commande, puis un assistant de configuration — comme `claude` au premier lancement.
+One command, then a setup wizard — same as `claude` on first run.
 
 ## Installation
 
@@ -8,50 +8,50 @@ Une commande, puis un assistant de configuration — comme `claude` au premier l
 curl -fsSL https://raw.githubusercontent.com/neomnia/neovibe/main/install.sh | bash
 ```
 
-(nécessite `kubectl` et `python3` déjà installés)
+(requires `kubectl` and `python3` already installed)
 
-Optionnel mais recommandé — pour la bannière avec le vrai logo NeoKube en couleurs au démarrage :
+Optional but recommended — for the startup banner with the real NeoKube logo in color:
 ```bash
-sudo apt install chafa   # ou : brew install chafa
+sudo apt install chafa   # or: brew install chafa
 ```
-Sans `chafa`, `neo` affiche un logo ASCII simplifié à la place — fonctionne pareil.
+Without `chafa`, `neo` shows a simplified ASCII logo instead — works the same either way.
 
-## Premier lancement
+## First run
 
 ```bash
 neo
 ```
 
-Comme `claude` te demande une clé API la première fois, `neo` te demande **deux choses** à coller
-(demandé une seule fois, stocké dans `~/.neovibe/`, jamais versionné) :
+Just like `claude` asks for an API key the first time, `neo` asks for **two things** to paste
+(asked once, stored in `~/.neovibe/`, never versioned):
 
-1. **Clé API de l'agent** — protège l'agent lui-même.
-2. **Jeton d'accès cluster** — portée strictement limitée (port-forward + lecture des pods, un
-   seul namespace, vérifié en pratique : refusé sur tout le reste du cluster). Le certificat et
-   l'adresse du cluster sont déjà connus par le programme, pas besoin de les fournir.
+1. **Agent API key** — protects the agent itself.
+2. **Cluster access token** — strictly scoped (port-forward + reading pods, a single namespace,
+   verified in practice: rejected on everything else in the cluster). The certificate and cluster
+   address are already known by the program, no need to provide them.
 
-Récupère ces deux valeurs auprès de Charles (ou génère-les toi-même côté kubinote si tu y as accès,
-voir `CLAUDE-agent-topology.md` §9 dans le repo Kubinote-GitOps).
+Get these two values from Charles (or generate them yourself on kubinote if you have access there,
+see `CLAUDE-agent-topology.md` §9 in the Kubinote-GitOps repo).
 
-Ensuite, à chaque lancement, `neo` détecte que c'est déjà configuré et démarre directement.
+After that, `neo` detects it's already configured and starts directly on every launch.
 
-## Prérequis réseau
+## Network requirements
 
-La machine doit pouvoir joindre `REDACTED-INTERNAL-IP:6443` (API K8s de kubinote) :
-- Sur le même LAN que kubinote → ça marche directement.
-- À distance → via le VPN WireGuard personnel de Charles (clé réservée dans Vault, à connecter
-  si pas déjà fait).
+The machine must be able to reach `REDACTED-INTERNAL-IP:6443` (kubinote's K8s API):
+- On the same LAN as kubinote → works directly.
+- Remotely → via Charles's personal WireGuard VPN (key reserved in Vault, connect it if not
+  already done).
 
-## Reconfigurer / changer de clé
+## Reconfigure / change key
 
 ```bash
 rm -rf ~/.neovibe
-neo   # relance l'assistant
+neo   # relaunches the wizard
 ```
 
-## Sécurité
+## Security
 
-- Le jeton distribué n'a **aucun droit d'administration** — juste port-forward vers le namespace
-  de Neo. Compromis ≠ accès au cluster.
-- La clé API protège l'agent lui-même (401 sans elle).
-- Deux couches indépendantes — voler l'une ne suffit pas.
+- The distributed token has **no admin rights** — just port-forward to Neo's namespace.
+  A compromised token ≠ cluster access.
+- The API key protects the agent itself (401 without it).
+- Two independent layers — stealing one isn't enough.

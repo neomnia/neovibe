@@ -1,16 +1,18 @@
 # neovibe
 
-Client terminal pour dialoguer avec les agents NeoKube — équivalent du CLI `claude` pour Claude Code.
+Terminal client to talk to NeoKube agents — the equivalent of the `claude` CLI for Claude Code.
 
-Aujourd'hui : branché sur **Neo** (agent de pilotage de la topologie multi-cluster NeoKube, `client-agent-core-staging` sur kubinote). Conçu pour être réutilisable avec d'autres agents NeoKube à terme (Charlotte, futurs agents), via la variable d'environnement `NEO_URL`.
+Today: connected to **Neo** (multi-cluster NeoKube topology pilot agent, `client-agent-core-staging`
+on kubinote). Designed to be reusable with other NeoKube agents later (Charlotte, future agents),
+via the `NEO_URL` environment variable.
 
 ## Installation
 
 ```bash
-git clone https://github.com/neomnia/neovibe.git
-ln -s $(pwd)/neovibe/bin/neo ~/.local/bin/neo
-ln -s $(pwd)/neovibe/bin/neo_term.py ~/.local/bin/neo_term.py
+curl -fsSL https://raw.githubusercontent.com/neomnia/neovibe/main/install.sh | bash
 ```
+
+See `INSTALL.md` for details (including setup on a machine other than kubinote).
 
 ## Usage
 
@@ -18,29 +20,38 @@ ln -s $(pwd)/neovibe/bin/neo_term.py ~/.local/bin/neo_term.py
 neo
 ```
 
-Ouvre automatiquement un `kubectl port-forward` vers le service `neo` (namespace `client-agent-core-staging`,
-cluster `kubinote`) et lance une session terminal interactive — streaming de la réponse, mémoire de session
-persistante côté agent. `Ctrl+D` ou `exit` pour quitter (le port-forward est coupé proprement).
+Automatically opens a `kubectl port-forward` to the `neo` service (namespace `client-agent-core-staging`,
+`kubinote` cluster) and starts an interactive terminal session — streamed response, persistent session
+memory on the agent side. `Ctrl+D` or `exit` to quit (the port-forward is cleanly closed).
+
+Each turn shows three clearly labeled sections: **Request** (what you asked), **Working** (tool
+calls made live, if any), and **Response** (the agent's final answer).
 
 ## Architecture
 
-- `bin/neo` — script bash, gère le port-forward + lance le client Python.
-- `bin/neo_term.py` — client terminal, consomme le flux SSE `/mission/stream` de l'agent (mêmes types
-  d'événements que Charlotte : `tool`, `step`, `token`, `error`, `done`, `heartbeat`).
+- `bin/neo` — bash script, handles the port-forward + launches the Python client.
+- `bin/neo_term.py` — terminal client, consumes the agent's `/mission/stream` SSE feed (same event
+  types as Charlotte: `tool`, `step`, `token`, `error`, `done`, `heartbeat`).
+- `bin/neo_banner.py` — startup banner (real NeoKube logo via `chafa`, ASCII fallback).
+- `bin/neo_setup.py` — first-run configuration wizard (API key + cluster access token).
 
-Le code de l'**agent** (backend, PydanticAI, outils multi-cluster) vit dans `Kubinote-GitOps/apps/agents-core/base/configmap-neo-script.yaml`, pas ici — ce dépôt est uniquement le client, comme `claude` (CLI) est séparé du modèle/backend Claude.
+The **agent** code (backend, PydanticAI, multi-cluster tools) lives in
+`Kubinote-GitOps/apps/agents-core/base/configmap-neo-script.yaml`, not here — this repo is only the
+client, the same way `claude` (CLI) is separate from the Claude model/backend.
 
-Voir `CLAUDE-agent-topology.md` (repo Kubinote-GitOps) pour le contexte complet.
+See `CLAUDE-agent-topology.md` (Kubinote-GitOps repo) for the full context.
 
 ## Versioning — patch vs release
 
-Automatique via semantic-release (Conventional Commits) — pas d'action manuelle, juste respecter le préfixe du message de commit :
+Automatic via semantic-release (Conventional Commits) — no manual action, just follow the commit
+message prefix:
 
-| Préfixe | Effet | Exemple |
+| Prefix | Effect | Example |
 |---|---|---|
-| `fix:` | **Version patch** (correction) — 0.1.0 → 0.1.1 | `fix: gere le cas ou l'agent ne repond pas` |
-| `feat:` | **Version mineure** (nouvelle fonctionnalité) — 0.1.0 → 0.2.0 | `feat: ajoute les permissions cote client` |
-| `feat!:` ou `BREAKING CHANGE:` dans le corps | **Version majeure** — 0.1.0 → 1.0.0 | Changement qui casse la compatibilité (ex: format settings.json incompatible) |
-| `docs:`, `chore:`, `refactor:` (sans `fix`/`feat`) | Pas de nouvelle version | Documentation, nettoyage |
+| `fix:` | **Patch version** (bug fix) — 0.1.0 → 0.1.1 | `fix: handle the case where the agent doesn't respond` |
+| `feat:` | **Minor version** (new feature) — 0.1.0 → 0.2.0 | `feat: add client-side permissions` |
+| `feat!:` or `BREAKING CHANGE:` in the body | **Major version** — 0.1.0 → 1.0.0 | A change that breaks compatibility (e.g. incompatible settings.json format) |
+| `docs:`, `chore:`, `refactor:` (without `fix`/`feat`) | No new version | Documentation, cleanup |
 
-Un tag Git + une entrée `CHANGELOG.md` sont générés automatiquement à chaque push sur `main` contenant un commit "releasable".
+A Git tag + a `CHANGELOG.md` entry are generated automatically on every push to `main` that contains
+a "releasable" commit. The current version is displayed in the `neo` banner at every launch.

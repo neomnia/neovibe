@@ -1,5 +1,5 @@
-"""Bannière de démarrage neovibe — logo réel (https://www.neokube.fr) rendu via chafa si
-disponible (vraies couleurs, blocs Unicode), sinon repli sur un hexagone ASCII simple."""
+"""neovibe startup banner — real logo (https://www.neokube.fr) rendered via chafa if
+available (true colors, Unicode blocks), otherwise falls back to a simple ASCII hexagon."""
 import shutil
 import subprocess
 import sys
@@ -12,7 +12,7 @@ RESET = "\033[0m"
 
 LOGO_PATH = Path(__file__).resolve().parent.parent / "assets" / "logo.jpg"
 
-# Repli si chafa n'est pas installé (`apt install chafa` / `brew install chafa`).
+# Fallback if chafa isn't installed (`apt install chafa` / `brew install chafa`).
 FALLBACK_LINES = [
     "         ╱◥◤╲         ",
     "       ╱      ╲       ",
@@ -50,7 +50,7 @@ def print_banner() -> None:
     else:
         for line in FALLBACK_LINES:
             print(f"{CYAN}{line}{RESET}")
-    print(f"{BOLD}neovibe{RESET}{DIM} — client NeoKube{RESET}\n")
+    print(f"{BOLD}neovibe{RESET}{DIM} — NeoKube client{RESET}\n")
 
 
 if __name__ == "__main__":

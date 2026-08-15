@@ -1,6 +1,6 @@
 {
   "name": "neovibe",
-  "version": "0.0.0",
+  "version": "0.5.0",
   "private": true,
-  "description": "Client terminal pour dialoguer avec les agents NeoKube"
+  "description": "Terminal client to talk to NeoKube agents"
 }

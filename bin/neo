@@ -1,7 +1,7 @@
 #!/bin/bash
-# Neo Code — lanceur terminal, façon `claude`.
-# Utilise l'accès kubectl déjà disponible sur la machine si possible (cas kubinote).
-# Sinon (machine distante sans accès cluster), demande la config scopée au premier lancement.
+# Neo Code — terminal launcher, Claude Code style.
+# Uses the kubectl access already available on this machine when possible (kubinote case).
+# Otherwise (remote machine with no cluster access), asks for the scoped config on first run.
 set -e
 
 NAMESPACE="client-agent-core-staging"
@@ -13,19 +13,19 @@ TERM_SCRIPT="$BIN_DIR/neo_term.py"
 SETUP_SCRIPT="$BIN_DIR/neo_setup.py"
 NEOVIBE_KUBECONFIG="$HOME/.neovibe/kubeconfig"
 
-# Clé API — toujours nécessaire, quelle que soit la machine.
+# API key — always required, regardless of the machine.
 if [ ! -f "$HOME/.neovibe/settings.local.json" ]; then
   python3 "$SETUP_SCRIPT" --api-key-only
 fi
 
-# Accès cluster : essaie d'abord le kubectl déjà configuré sur cette machine (cas kubinote).
+# Cluster access: try the kubectl already configured on this machine first (kubinote case).
 if kubectl --context=kubinote get pods -n "$NAMESPACE" >/dev/null 2>&1; then
   KUBECTL_CONTEXT="kubinote"
 elif [ -f "$NEOVIBE_KUBECONFIG" ] && KUBECONFIG="$NEOVIBE_KUBECONFIG" kubectl get pods -n "$NAMESPACE" >/dev/null 2>&1; then
   export KUBECONFIG="$NEOVIBE_KUBECONFIG"
   KUBECTL_CONTEXT="kubinote"
 else
-  # Ni l'un ni l'autre ne marche — machine distante jamais configurée : demande le jeton scopé.
+  # Neither works — remote machine never configured yet: ask for the scoped token.
   python3 "$SETUP_SCRIPT" --kubeconfig-only
   export KUBECONFIG="$NEOVIBE_KUBECONFIG"
   KUBECTL_CONTEXT="kubinote"
@@ -42,7 +42,7 @@ kubectl --context="$KUBECTL_CONTEXT" port-forward -n "$NAMESPACE" "svc/$SERVICE"
   "$LOCAL_PORT:$REMOTE_PORT" > /tmp/neo-portforward.log 2>&1 &
 PF_PID=$!
 
-# Attendre que le port-forward soit prêt
+# Wait for port-forward to be ready
 for i in $(seq 1 20); do
   if curl -s -o /dev/null "http://localhost:$LOCAL_PORT/health" 2>/dev/null; then
     break
