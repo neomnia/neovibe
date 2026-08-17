@@ -69,3 +69,4 @@
 ### Features
 
 * authentification par cle API (Authorization Bearer), settings.local.json non versionne ([38f315e](https://github.com/neomnia/neovibe/commit/38f315e55beeac0ae1279f71002f8a4bf7928ac2))
+
