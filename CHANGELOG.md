@@ -1,3 +1,9 @@
+## [0.10.0](https://github.com/neomnia/neovibe/compare/v0.9.0...v0.10.0) (2026-08-17)
+
+### Features
+
+* distinct icons for analysis/search-work/response ([07095b1](https://github.com/neomnia/neovibe/commit/07095b1a94577d2749208b7b6887326d66092902))
+
 ## [0.9.0](https://github.com/neomnia/neovibe/compare/v0.8.3...v0.9.0) (2026-08-17)
 
 ### Features
