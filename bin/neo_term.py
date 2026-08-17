@@ -177,7 +177,7 @@ def stream_mission(message: str) -> None:
                         print(f"\n{BOLD}Working:{RESET}", flush=True)
                         printed_work_header = True
                     name = ev.get("name", "?")
-                    print(f"{CYAN}  ⚙ tool: {name}{RESET}", flush=True)
+                    print(f"{CYAN}  🔍 search/work: {name}{RESET}", flush=True)
                     spinner.start()
                     spinner_running = True
                 elif etype == "step":
@@ -185,13 +185,13 @@ def stream_mission(message: str) -> None:
                         print(f"\n{BOLD}Working:{RESET}", flush=True)
                         printed_work_header = True
                     text = ev.get("text", "")
-                    print(f"{YELLOW}  → {text}{RESET}", flush=True)
+                    print(f"{YELLOW}  🧠 analysis: {text}{RESET}", flush=True)
                     spinner.start()
                     spinner_running = True
                 elif etype == "token":
                     if not printed_response_header:
                         print(f"\n{BOLD}Response:{RESET}", flush=True)
-                        print(f"{BOLD}{GREEN}neo:{RESET}", flush=True)
+                        print(f"{BOLD}{GREEN}✅ neo:{RESET}", flush=True)
                         printed_response_header = True
                     text = ev.get("text", "")
                     for ch in text:
@@ -205,7 +205,7 @@ def stream_mission(message: str) -> None:
                     if not printed_response_header:
                         answer = ev.get("answer", "")
                         print(f"\n{BOLD}Response:{RESET}", flush=True)
-                        print(f"{BOLD}{GREEN}neo:{RESET}", flush=True)
+                        print(f"{BOLD}{GREEN}✅ neo:{RESET}", flush=True)
                         for md_line in answer.split("\n"):
                             print(f"  {_render_markdown_line(md_line)}", flush=True)
                     else:
