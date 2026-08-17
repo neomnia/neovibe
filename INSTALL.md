@@ -4,6 +4,8 @@ One command, then a setup wizard — same as `claude` on first run.
 
 ## Installation
 
+### Linux / macOS
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/neomnia/neovibe/main/install.sh | bash
 ```
@@ -15,6 +17,21 @@ Optional but recommended — for the startup banner with the real NeoKube logo i
 sudo apt install chafa   # or: brew install chafa
 ```
 Without `chafa`, `neo` shows a simplified ASCII logo instead — works the same either way.
+
+### Windows
+
+neovibe is a bash + Python client (kubectl port-forward under the hood) — there's no native
+Windows rewrite, it runs through **WSL** (Windows Subsystem for Linux), exactly like on Linux.
+One command in PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/neomnia/neovibe/main/install.ps1 | iex
+```
+
+If WSL isn't installed yet, the script tells you to run `wsl --install` (as Administrator),
+restart, then re-run the command — it installs neovibe inside WSL automatically once WSL is
+available. Afterwards, launch `neo` from a WSL terminal (the "Ubuntu" app, or `wsl` in
+PowerShell/Windows Terminal).
 
 ## First run
 

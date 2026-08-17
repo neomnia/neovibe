@@ -8,7 +8,20 @@ NAMESPACE="client-agent-core-staging"
 SERVICE="neo"
 LOCAL_PORT="18495"
 REMOTE_PORT="8495"
-BIN_DIR="$(dirname "$(readlink -f "$0")")"
+
+# Portable symlink resolution -- `readlink -f` is GNU-only and fails on stock macOS (BSD
+# readlink has no -f flag). This loop achieves the same result with plain POSIX readlink,
+# which both Linux and macOS ship natively.
+_src="$0"
+while [ -h "$_src" ]; do
+  _dir="$(cd -P "$(dirname "$_src")" >/dev/null 2>&1 && pwd)"
+  _src="$(readlink "$_src")"
+  case "$_src" in
+    /*) ;;
+    *) _src="$_dir/$_src" ;;
+  esac
+done
+BIN_DIR="$(cd -P "$(dirname "$_src")" >/dev/null 2>&1 && pwd)"
 TERM_SCRIPT="$BIN_DIR/neo_term.py"
 SETUP_SCRIPT="$BIN_DIR/neo_setup.py"
 NEOVIBE_KUBECONFIG="$HOME/.neovibe/kubeconfig"

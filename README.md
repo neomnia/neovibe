@@ -8,8 +8,14 @@ via the `NEO_URL` environment variable.
 
 ## Installation
 
+**Linux / macOS**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/neomnia/neovibe/main/install.sh | bash
+```
+
+**Windows** (via WSL — neovibe is a bash/Python tool, no native rewrite; see `INSTALL.md`)
+```powershell
+irm https://raw.githubusercontent.com/neomnia/neovibe/main/install.ps1 | iex
 ```
 
 See `INSTALL.md` for details (including setup on a machine other than kubinote).
@@ -35,9 +41,11 @@ calls made live, if any), and **Response** (the agent's final answer).
 - `bin/neo_banner.py` — startup banner (real NeoKube logo via `chafa`, ASCII fallback).
 - `bin/neo_setup.py` — first-run configuration wizard (API key + cluster access token).
 
-The **agent** code (backend, PydanticAI, multi-cluster tools) lives in
-`Kubinote-GitOps/apps/agents-core/base/configmap-neo-script.yaml`, not here — this repo is only the
-client, the same way `claude` (CLI) is separate from the Claude model/backend.
+The **agent** code (backend, PydanticAI, multi-cluster tools) lives in the
+`neomnia/neokube-agents` repo (`agents/neo/neo_agent.py`, released as a versioned Docker image
+`ghcr.io/neomnia/neokube-agents-neo`, deployed via `Kubinote-GitOps/apps/client-agent-core-staging/`)
+— not here. This repo is only the client, the same way `claude` (CLI) is separate from the Claude
+model/backend.
 
 See `CLAUDE-agent-topology.md` (Kubinote-GitOps repo) for the full context.
 
