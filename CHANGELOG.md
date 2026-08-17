@@ -1,3 +1,9 @@
+## [0.9.0](https://github.com/neomnia/neovibe/compare/v0.8.3...v0.9.0) (2026-08-17)
+
+### Features
+
+* support Windows (via WSL) + fix macOS portability bug ([a4615e3](https://github.com/neomnia/neovibe/commit/a4615e3769dda172dd1ef89ef0ba4cb6cf3af733))
+
 ## [0.8.3](https://github.com/neomnia/neovibe/compare/v0.8.2...v0.8.3) (2026-08-15)
 
 ### Bug Fixes
