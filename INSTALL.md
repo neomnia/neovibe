@@ -39,24 +39,25 @@ PowerShell/Windows Terminal).
 neo
 ```
 
-Just like `claude` asks for an API key the first time, `neo` asks for **two things** to paste
+Just like `claude` asks for an API key the first time, `neo` asks for a few things to paste
 (asked once, stored in `~/.neovibe/`, never versioned):
 
 1. **Agent API key** — protects the agent itself.
-2. **Cluster access token** — strictly scoped (port-forward + reading pods, a single namespace,
-   verified in practice: rejected on everything else in the cluster). The certificate and cluster
-   address are already known by the program, no need to provide them.
+2. **Cluster API server address** — deployment-specific, ask your NeoKube admin.
+3. **Cluster access token** — strictly scoped (port-forward + reading pods, a single namespace,
+   verified in practice: rejected on everything else in the cluster). The CA certificate is
+   already known by the program (public, not secret), no need to provide it.
 
-Get these two values from Charles (or generate them yourself on kubinote if you have access there,
-see `CLAUDE-agent-topology.md` §9 in the Kubinote-GitOps repo).
+Get these values from your NeoKube admin (or generate them yourself on kubinote if you have
+access there — see the internal topology docs in the private GitOps repo).
 
 After that, `neo` detects it's already configured and starts directly on every launch.
 
 ## Network requirements
 
-The machine must be able to reach `REDACTED-INTERNAL-IP:6443` (kubinote's K8s API):
+The machine must be able to reach kubinote's K8s API on the internal network:
 - On the same LAN as kubinote → works directly.
-- Remotely → via Charles's personal WireGuard VPN (key reserved in Vault, connect it if not
+- Remotely → via the admin's WireGuard VPN (ask your NeoKube admin for access, connect it if not
   already done).
 
 ## Reconfigure / change key

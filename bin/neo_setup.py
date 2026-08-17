@@ -12,9 +12,10 @@ CONFIG_DIR = Path.home() / ".neovibe"
 SETTINGS_FILE = CONFIG_DIR / "settings.local.json"
 KUBECONFIG_FILE = CONFIG_DIR / "kubeconfig"
 
-# Not secret — public cluster CA certificate + server address.
+# Not secret — public cluster CA certificate. The server address, on the other hand, is
+# deployment-specific (private LAN IP) and asked interactively below rather than hardcoded, so
+# this file has nothing deployment-specific baked in (this repo is public).
 CLUSTER_CA_B64 = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJlRENDQVIyZ0F3SUJBZ0lCQURBS0JnZ3Foa2pPUFFRREFqQWpNU0V3SHdZRFZRUUREQmhyTTNNdGMyVnkKZG1WeUxXTmhRREUzTnpVMk16QTRNak13SGhjTk1qWXdOREE0TURVME56QXpXaGNOTXpZd05EQTFNRFUwTnpBegpXakFqTVNFd0h3WURWUVFEREJock0zTXRjMlZ5ZG1WeUxXTmhRREUzTnpVMk16QTRNak13V1RBVEJnY3Foa2pPClBRSUJCZ2dxaGtqT1BRTUJCd05DQUFSRFRqdTJjWjZoY0RzdFBGd3c2WmIzS3Jpdm9iZTJQNVp4eGJVNzA1eVkKZHBpZ0R2bW0vS0Zid0RhZm5icFpseERqREZsdTVlVHpTa1c3cVJOYlZ0dmdvMEl3UURBT0JnTlZIUThCQWY4RQpCQU1DQXFRd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZEJnTlZIUTRFRmdRVVk1S2pMbkh3TU95Y2RpZ01acUt6CkNMRFA4YXN3Q2dZSUtvWkl6ajBFQXdJRFNRQXdSZ0loQU56MEtIS1BJSEM1U3k1VVlscmdabDVtTEdxbWx6ZUYKeitnZ0tzdWgxM0Z5QWlFQTNrNTg3V09RSUJPc3VQQ2NWNnN3cEVnQVRwQUJpeHMzM3pESlQwRHpLVmc9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K"
-CLUSTER_SERVER = "https://REDACTED-INTERNAL-IP:6443"
 
 BOLD = "\033[1m"
 DIM = "\033[2m"
@@ -28,13 +29,13 @@ def _write_settings(api_key: str) -> None:
     SETTINGS_FILE.chmod(0o600)
 
 
-def _write_kubeconfig(token: str) -> None:
+def _write_kubeconfig(token: str, server: str) -> None:
     content = f"""apiVersion: v1
 kind: Config
 clusters:
 - cluster:
     certificate-authority-data: {CLUSTER_CA_B64}
-    server: {CLUSTER_SERVER}
+    server: {server}
   name: kubinote-neovibe
 contexts:
 - context:
@@ -66,11 +67,12 @@ def ask_api_key() -> None:
 def ask_kubeconfig() -> None:
     print(f"{BOLD}=== neovibe setup — cluster access ==={RESET}")
     print(f"{DIM}This machine doesn't have access to the NeoKube cluster yet.{RESET}")
+    server = input(f"{BOLD}Cluster API server (e.g. https://10.0.0.5:6443): {RESET}").strip()
     token = input(f"{BOLD}Cluster access token: {RESET}").strip()
-    if not token:
-        print("Empty token — nothing was saved.", file=sys.stderr)
+    if not server or not token:
+        print("Empty server/token — nothing was saved.", file=sys.stderr)
         sys.exit(1)
-    _write_kubeconfig(token)
+    _write_kubeconfig(token, server)
     print(f"{GREEN}✓ Access configured.{RESET}\n")
 
 

@@ -1,3 +1,5 @@
 settings.local.json
 .neovibe/
 *.local.json
+__pycache__/
+*.pyc

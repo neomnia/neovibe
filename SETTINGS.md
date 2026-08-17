@@ -21,7 +21,7 @@ mappe les paramètres génériques réels de Claude Code vers leur équivalent p
 ## Ce qui a le plus de valeur à construire en premier
 
 1. **`~/.neovibe/settings.json`** — fichier de config de base : `agent_url`, `agent_name`, `session_retention_days`. Remplace le hardcode `NEO_URL` actuel.
-2. **Permissions côté client** — la vraie valeur ajoutée du modèle Claude Code : aujourd'hui rien n'empêche Neo d'exécuter une action destructrice sans que Charles la voie venir. Ajouter `permissions.ask` sur les outils sensibles (`kubectl_*` avec `delete`, par exemple) redonnerait le filet de sécurité que Claude Code offre nativement.
+2. **Permissions côté client** — la vraie valeur ajoutée du modèle Claude Code : aujourd'hui rien n'empêche l'agent d'exécuter une action destructrice sans que l'opérateur la voie venir. Ajouter `permissions.ask` sur les outils sensibles (`kubectl_*` avec `delete`, par exemple) redonnerait le filet de sécurité que Claude Code offre nativement.
 3. **Mémoire projet (`NEOVIBE.md`)** — charger un contexte local avant chaque session, comme `CLAUDE.md`.
 4. Hooks et commandes slash — utiles mais moins prioritaires que les deux premiers.
 
