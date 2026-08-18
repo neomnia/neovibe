@@ -5,7 +5,7 @@
 set -e
 
 NAMESPACE="client-agent-core-staging"
-SERVICE="neo"
+SERVICE="neo-staging"
 LOCAL_PORT="18495"
 REMOTE_PORT="8495"
 
